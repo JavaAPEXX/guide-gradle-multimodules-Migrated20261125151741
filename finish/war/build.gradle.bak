@@ -1,0 +1,35 @@
+apply plugin: 'war'
+
+description = 'WAR Module'
+
+configurations {
+    warOnly
+}
+
+artifacts {
+    warOnly war
+}
+
+dependencies {
+    // tag::projectJar[]
+    implementation project(':jar')
+    // end::projectJar[]
+    compileOnly 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+    compileOnly 'org.eclipse.microprofile:microprofile:7.1'
+}
+
+war {
+    archiveFileName = rootProject.name + '-' + getArchiveBaseName().get() + '-' +
+                      rootProject.version + '.' + getArchiveExtension().get()
+}
+
+// tag::dependsOn[]
+war.dependsOn ':jar:jar'
+// end::dependsOn[]
+
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}

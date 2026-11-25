@@ -1,0 +1,72 @@
+// tag::copyright[]
+/*******************************************************************************
+ * Copyright (c) 2025 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *******************************************************************************/
+// end::copyright[]
+package it.io.openliberty.guides.multimodules;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+
+import org.junit.jupiter.api.Test;
+
+public class IT {
+    String port = System.getProperty("http.port");
+    String war = "converter";
+    String urlBase = "http://localhost:" + port + "/" + war + "/";
+
+    @Test
+    // tag::testIndexPage[]
+    public void testIndexPage() throws Exception {
+        String url = this.urlBase;
+        HttpURLConnection con = testRequestHelper(url, "GET");
+        assertEquals(200, con.getResponseCode(), "Incorrect response code from " + url);
+        assertTrue(testBufferHelper(con).contains("Enter the height in centimeter"),
+                        "Incorrect response from " + url);
+    }
+    // end::testIndexPage[]
+
+    @Test
+    // tag::testHeightsPage[]
+    public void testHeightsPage() throws Exception {
+        String url = this.urlBase + "heights.jsp?heightCm=10";
+        HttpURLConnection con = testRequestHelper(url, "POST");
+        assertTrue(testBufferHelper(con).contains("3        in"),
+                        "Incorrect response from " + url);
+    }
+    // end::testHeightsPage[]
+
+    private HttpURLConnection testRequestHelper(String url, String method)
+                    throws Exception {
+        URL obj = URI.create(url).toURL();
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        // optional default is GET
+        con.setRequestMethod(method);
+        return con;
+    }
+
+    private String testBufferHelper(HttpURLConnection con) throws Exception {
+        try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(con.getInputStream()))) {
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            return response.toString();
+        }
+    }
+
+}
